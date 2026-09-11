@@ -25,3 +25,6 @@ dist-ssr
 .vercel
 .env*
 !.env.example
+
+# Screenshot runs — emailed, never stored in the repo
+screenshots/

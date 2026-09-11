@@ -1,0 +1,39 @@
+name: Screenshots
+
+# Emails a fresh batch of public-page screenshots. Capture and delivery only —
+# nothing in this workflow posts anywhere, and nothing is committed back.
+
+on:
+  schedule:
+    # 07:00 UTC daily — 09:00 CEST in summer, 08:00 CET in winter.
+    # (GitHub cron has no timezone support, so the local hour shifts with DST.)
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture screenshots and email the batch
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          AGENT_RECIPIENT_EMAIL: ${{ secrets.AGENT_RECIPIENT_EMAIL }}
+        run: node scripts/capture.mjs
